@@ -1,0 +1,33 @@
+{
+  "name": "bamazon-sql-databases-project",
+  "version": "1.0.0",
+  "description": "mySQL and node project using inquirer and table making npm",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "TEST"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeugimAtreides/Bamazon-SQL-Databases-Project.git"
+  },
+  "keywords": [
+    "bamazon",
+    "UCF",
+    "inquirer",
+    "node",
+    "mySQL",
+    "tables"
+  ],
+  "author": "M.E. Villarreal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LeugimAtreides/Bamazon-SQL-Databases-Project/issues"
+  },
+  "homepage": "https://github.com/LeugimAtreides/Bamazon-SQL-Databases-Project#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "cli-table": "^0.3.1",
+    "inquirer": "^6.4.1",
+    "mysql": "^2.17.1"
+  }
+}
