@@ -5,9 +5,9 @@ var Table = require('cli-table');
 var log = console.log;
 
 var table = new Table({
-    head: ['Item ID', 'Product Name', 'Department', 'Price', 'Available Stock'],
-    colWidths: [100, 200]
-})
+    head: ['Item ID', 'Product Name', 'Department', 'Price', 'Stock Quantity'],
+    colWidths: [10, 20, 20, 10, 20]
+});
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -26,29 +26,34 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     log("connected as id " + connection.threadId);
-    start();
+    userVerify();
 });
 
-// this function will hold the other functions to run the program
+// this function will show the inventory after the user verification and run buyProduct();
 function start() {
-    log(chalk.green('Welcome, please browse our selection!\n'));
+    log(chalk.green("Please browse our selection!\n"));
     connection.query(
-        "SELECT * FROM products", function(err, res) {
+        "SELECT * FROM products", function (err, res) {
             if (err) throw err;
-            log(chalk.red(res.length));
+            for (let i = 0; i < res.length; i++) {
 
-            for (var i = 0; i < res.length; i++) {
-                log(res[i])
-                table.push(res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity)
-                // table.push(res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity);
-                // table.push("miguel", "miguel", "miguel",);
-                // log(chalk.blue(table.toString()));
+                table.push([
+                    res[i].item_id,
+                    res[i].product_name,
+                    res[i].department_name,
+                    res[i].price,
+                    res[i].stock_quantity
+                ]);
+
             };
 
-            userVerify();
+            log(chalk.blue(table.toString()));
+            buyProduct();
+
+
         }
     );
-    
+
 }
 
 // this will end the program when the user decides and logs them out
@@ -73,12 +78,46 @@ function confirmNewUser() {
                 message: "Would you like to create an account with Bamazon today?",
                 default: true
             }
-        ]).then(function(answer) {
+        ]).then(function (answer) {
             if (answer.confirm) {
-                return true;
+
+                connection.query(
+                    "INSERT INTO users SET ?",
+                    {
+                        username: answer.username,
+                        password: answer.password
+                    }
+                ), function (err) {
+                    if (err) throw err;
+                    inquire
+                        .prompt([
+                            {
+                                name: "name",
+                                type: "input",
+                                message: "Enter your name and get ready to enjoy Bamazon!"
+                            }
+                        ]).then(function (answer) {
+                            connection.query(
+                                "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
+                                {
+                                    name: answer.name
+                                }
+
+                            ), function(err) {
+
+                                if (err) throw err;
+                                buyProduct();
+                            }
+                        })
+                }
+
             }
         });
 };
+
+
+
+
 // this will run and create a user account or otherwise log user in
 function userVerify() {
     inquire
@@ -96,7 +135,7 @@ function userVerify() {
                 mask: "*",
                 validate: passwordValidate
             }
-        ]).then(function(answer) {
+        ]).then(function (answer) {
             log(answer.username);
             connection.query(
                 "SELECT * FROM users", function (err, res) {
@@ -104,62 +143,30 @@ function userVerify() {
                     for (var i = 0; i < res.length; i++) {
                         if (res[i].username === answer.username && res[i].password === answer.password) {
                             connection.query(
-                                "SELECT name WHERE username = ?",
+                                "SELECT name FROM users WHERE username = ?",
                                 [
                                     answer.username
                                 ],
                                 function (err, res) {
+                                    // log(res);
                                     if (err) throw err;
-                                    log(chalk.green("\nWelcome back, " + res.name + "!"));
+                                    for (let i = 0; i < res.length; i++) {
+                                        log(chalk.blue("\nWelcome back " + res[i].name));
+                                        start();
+                                    }
                                 }
-                            );
-                            buyProduct();
 
-                        } else if (res[i].username = !answer.username && res[i].password === answer.password) {
+                            );
+                        } else if (res[i].username !== answer.username && res[i].password === answer.password) {
                             log(chalk.bgRed("\nIncorrect username, please try again..."));
                             userVerify();
 
-                        } else if (res[i].password = !answer.password) {
+                        } else if (res[i].username === answer.username && res[i].password !== answer.password) {
                             log(chalk.bgRed("\nIncorrect password, please try again..."));
                             userVerify();
 
                         } else {
-                            confirmNewUser();
-                            if (confirmNewUser) {
-                                connection.query(
-                                    "INSERT INTO user SET ?",
-                                    {
-                                        username: answer.username,
-                                        password: answer.password
-                                    }
-                                ), function (err) {
-                                    if (err) throw err;
-                                }
-                            };
-                            inquire
-                                .prompt([
-                                    {
-                                        name: "name",
-                                        type: "input",
-                                        message: "Please enter your name! and welcome to Bamazon!"
-                                    }
-                                ]).then(function (answer) {
-                                    connection.query(
-                                        "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
-                                        {
-                                            name: answer.name
-                                        }
-
-                                    ), function(err) {
-
-                                        if (err) throw err;
-                                        buyProduct();
-
-
-
-
-                                    }
-                                })
+                            confirmNewUser(answer);
                         }
                     }
                 }
@@ -168,5 +175,5 @@ function userVerify() {
 };
 
 function buyProduct() {
-    log(chalk.bgWhite("\nCOMING SOON"))
+    log(chalk.bgCyan("\nCOMING SOON"))
 }
