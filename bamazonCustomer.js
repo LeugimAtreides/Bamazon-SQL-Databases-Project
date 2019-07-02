@@ -5,7 +5,7 @@ var Table = require('cli-table');
 var log = console.log;
 
 var table = new Table({
-    head: ['TH 1 label', 'TH 2 label'],
+    head: ['Item ID', 'Product Name', 'Department', 'Price', 'Available Stock'],
     colWidths: [100, 200]
 })
 
@@ -35,13 +35,20 @@ function start() {
     connection.query(
         "SELECT * FROM products", function(err, res) {
             if (err) throw err;
-            for (i = 0; i < res.length; i++) {
-                table.push(res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity);
-                log(chalk.bgBlue(table));
-            }
+            log(chalk.red(res.length));
+
+            for (var i = 0; i < res.length; i++) {
+                log(res[i])
+                table.push(res[i].item_id, res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity)
+                // table.push(res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity);
+                // table.push("miguel", "miguel", "miguel",);
+                // log(chalk.blue(table.toString()));
+            };
+
+            userVerify();
         }
     );
-    userVerify();
+    
 }
 
 // this will end the program when the user decides and logs them out
@@ -66,7 +73,7 @@ function confirmNewUser() {
                 message: "Would you like to create an account with Bamazon today?",
                 default: true
             }
-        ]).then(function (answer) {
+        ]).then(function(answer) {
             if (answer.confirm) {
                 return true;
             }
@@ -89,7 +96,7 @@ function userVerify() {
                 mask: "*",
                 validate: passwordValidate
             }
-        ]).then(function (answer) {
+        ]).then(function(answer) {
             log(answer.username);
             connection.query(
                 "SELECT * FROM users", function (err, res) {
@@ -160,3 +167,6 @@ function userVerify() {
         })
 };
 
+function buyProduct() {
+    log(chalk.bgWhite("\nCOMING SOON"))
+}

@@ -16,7 +16,7 @@ replace into products (product_name, department_name, price, stock_quantity) val
 ('Rawhide Dog Bone', 'Pets', 7.99, 300);
 
 replace into users (name, username, password) values
-('Miguel Villarreal','mvillarreal789', 'venom789');
+('Miguel Villarreal','mvillarreal789', 'Venom1215!');
 
 SELECT * FROM users;
 select * from products;
