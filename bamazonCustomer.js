@@ -30,41 +30,50 @@ connection.connect(function (err) {
 });
 
 // this function will hold the other functions to run the program
-function start(){
+function start() {
+    log(chalk.green('Welcome, please browse our selection!\n'));
+    connection.query(
+        "SELECT * FROM products", function(err, res) {
+            if (err) throw err;
+            for (i = 0; i < res.length; i++) {
+                table.push(res[i].product_name, res[i].department_name, res[i].price, res[i].stock_quantity);
+                log(chalk.bgBlue(table));
+            }
+        }
+    );
     userVerify();
-
 }
 
 // this will end the program when the user decides and logs them out
-function exit(){
+function exit() {
     log(chalk.green('Thanks for visiting Bamazon, have a great rest of your day!'));
     connection.end;
 }
 
 // password validation to ensure strong password
-function passwordValidate(password){
+function passwordValidate(password) {
     var strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})");
     return strongRegex.test(password) || "The password must be eight characters or longer, contain a lowercase letter, an uppercase letter, a number, and at least one special character";
 }
 
 // confirm new user to enter into database
-function confirmNewUser(){
+function confirmNewUser() {
     inquire
-    .prompt([
-        {
-            name: "confirm",
-            type: "confirm",
-            message: "Would you like to create an account with Bamazon today?",
-            default: true
-        }
-    ]).then(function(answer){
-        if (answer.confirm){
-            return true;
-        }
-    });
-}
+        .prompt([
+            {
+                name: "confirm",
+                type: "confirm",
+                message: "Would you like to create an account with Bamazon today?",
+                default: true
+            }
+        ]).then(function (answer) {
+            if (answer.confirm) {
+                return true;
+            }
+        });
+};
 // this will run and create a user account or otherwise log user in
-function userVerify(){
+function userVerify() {
     inquire
         .prompt([
             {
@@ -80,10 +89,10 @@ function userVerify(){
                 mask: "*",
                 validate: passwordValidate
             }
-        ]).then(function(answer){
+        ]).then(function (answer) {
             log(answer.username);
             connection.query(
-                "SELECT * FROM users", function(err, res){
+                "SELECT * FROM users", function (err, res) {
                     if (err) throw err;
                     for (var i = 0; i < res.length; i++) {
                         if (res[i].username === answer.username && res[i].password === answer.password) {
@@ -94,31 +103,54 @@ function userVerify(){
                                 ],
                                 function (err, res) {
                                     if (err) throw err;
-                                    log(chalk.green("\nWelcome back, " + res + "!"));
+                                    log(chalk.green("\nWelcome back, " + res.name + "!"));
                                 }
                             );
                             buyProduct();
 
-                        } else if (res[i].username =! answer.username && res[i].password === answer.password) {
+                        } else if (res[i].username = !answer.username && res[i].password === answer.password) {
                             log(chalk.bgRed("\nIncorrect username, please try again..."));
                             userVerify();
 
-                        } else if (res[i].password =! answer.password){
+                        } else if (res[i].password = !answer.password) {
                             log(chalk.bgRed("\nIncorrect password, please try again..."));
                             userVerify();
 
                         } else {
+                            confirmNewUser();
+                            if (confirmNewUser) {
+                                connection.query(
+                                    "INSERT INTO user SET ?",
+                                    {
+                                        username: answer.username,
+                                        password: answer.password
+                                    }
+                                ), function (err) {
+                                    if (err) throw err;
+                                }
+                            };
                             inquire
                                 .prompt([
                                     {
-                                        name: "confirm",
-                                        type: "confirm",
-                                        message: "Would you like to create an account with Bamazon today?",
-                                        default: true
+                                        name: "name",
+                                        type: "input",
+                                        message: "Please enter your name! and welcome to Bamazon!"
                                     }
-                                ]).then(function(answer){
-                                    if (answer.confirm){
-                                        return true;
+                                ]).then(function (answer) {
+                                    connection.query(
+                                        "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
+                                        {
+                                            name: answer.name
+                                        }
+
+                                    ), function(err) {
+
+                                        if (err) throw err;
+                                        buyProduct();
+
+
+
+
                                     }
                                 })
                         }
@@ -126,4 +158,5 @@ function userVerify(){
                 }
             )
         })
-}
+};
+
