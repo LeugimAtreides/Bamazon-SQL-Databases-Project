@@ -80,40 +80,31 @@ function confirmNewUser() {
             }
         ]).then(function (answer) {
             if (answer.confirm) {
-
-                connection.query(
-                    "INSERT INTO users SET ?",
-                    {
-                        username: answer.username,
-                        password: answer.password
-                    }
-                ), function (err) {
-                    if (err) throw err;
-                    inquire
-                        .prompt([
+                inquire
+                    .prompt([
+                        {
+                            name: "name",
+                            type: "input",
+                            message: "Enter your name and get ready to enjoy Bamazon!"
+                        }
+                    ]).then(function (answer) {
+                        connection.query(
+                            "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
                             {
-                                name: "name",
-                                type: "input",
-                                message: "Enter your name and get ready to enjoy Bamazon!"
+                                name: answer.name
                             }
-                        ]).then(function (answer) {
-                            connection.query(
-                                "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
-                                {
-                                    name: answer.name
-                                }
 
-                            ), function(err) {
+                        ), function (err) {
 
-                                if (err) throw err;
-                                buyProduct();
-                            }
-                        })
-                }
+                            if (err) throw err;
+                            buyProduct();
+                        }
+                    })
 
             }
         });
 };
+
 
 
 
@@ -166,7 +157,16 @@ function userVerify() {
                             userVerify();
 
                         } else {
-                            confirmNewUser(answer);
+                            connection.query(
+                                "INSERT INTO users SET ?",
+                                {
+                                    username: answer.username,
+                                    password: answer.password
+                                }
+                            ), function (err) {
+                                if (err) throw err;
+                                confirmNewUser();
+                            }
                         }
                     }
                 }
