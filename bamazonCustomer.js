@@ -8,6 +8,8 @@ var customerName = [];
 var currentOrder = [];
 var currentOrderQuantity = [];
 var globalNewStockQuantity = [];
+var currentPrice = [];
+var totalPrice = [];
 
 var table = new Table({
     head: ['Item ID', 'Product Name', 'Department', 'Price', 'Stock Quantity'],
@@ -54,6 +56,7 @@ function start() {
             };
 
             log(chalk.blue(table.toString()));
+
             buyProduct();
 
 
@@ -151,7 +154,7 @@ function userVerify() {
                                     if (err) throw err;
                                     for (let i = 0; i < res.length; i++) {
                                         log(chalk.blue("\nWelcome back " + res[i].name));
-                                        customerName.push(res[i].name)
+                                        customerName.push(res[0].name)
                                         start();
                                     }
                                 }
@@ -233,6 +236,16 @@ function buyProduct() {
                 // push the product purchase response into a global variable
                 currentOrder.push(res[0].product_name);
 
+                currentPrice.push(res[0].price);
+
+                let price = currentPrice * currentOrderQuantity;
+
+                totalPrice.push(price);
+
+                // log(chalk.bgRed(totalPrice));
+
+
+
                 // inquire prompt to confirm order and show the order back to the customer
 
                 inquire
@@ -264,13 +277,15 @@ function buyProduct() {
 
                                     let oldStockQuantity = res[0].stock_quantity;
 
-                                    log(chalk.red(oldStockQuantity));
+                                    // log(chalk.red(oldStockQuantity));
 
                                     let localNewStockQuantity = oldStockQuantity - currentOrderQuantity;
 
                                     globalNewStockQuantity.push(localNewStockQuantity);
 
                                     updateStock();
+
+
                                     
                                 }
                             );
@@ -305,19 +320,19 @@ function updateStock() {
 // function to display the final order and price to the customer and ask for another purchase or exit program
 function showFinalOrder() {
     inquire
-        prompt([
+        .prompt([
             {
                 name: "finalOrder",
-                type: "choices",
+                type: "list",
                 message: chalk.bgGreen(
-                    "\nCongratulations on your purchase " + chalk.magenta(customerName) + "!" + "\nWhat would you like to make another purchase or log out?"),
+                    "\nCongratulations on your purchase " + chalk.magenta(customerName) + "!") +"\nYour total comes out to: " + chalk.green(totalPrice) + chalk.bgGreen("\nWould you like to make another purchase or log out?\n"),
                 choices: ["Make another purchase", "Log Out"]
             }
         ]).then(function(answer){
             currentOrder.length = 0;
             currentOrderQuantity.length = 0;
             globalNewStockQuantity.length = 0;
-            switch (answer.name){
+            switch (answer.finalOrder){
                 case "Make another purchase":
                     start();
                     break;
