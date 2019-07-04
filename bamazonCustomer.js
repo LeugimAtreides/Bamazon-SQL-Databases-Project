@@ -33,8 +33,8 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     log("connected as id " + connection.threadId);
-    // userVerify();
-    buyProduct();
+    userVerify();
+    
 });
 
 // this function will show the inventory after the user verification and run buyProduct();
@@ -325,24 +325,30 @@ function showFinalOrder() {
                 name: "finalOrder",
                 type: "list",
                 message: chalk.bgGreen(
-                    "\nCongratulations on your purchase " + chalk.magenta(customerName) + "!") +"\nYour total comes out to: " + chalk.green(totalPrice) + chalk.bgGreen("\nWould you like to make another purchase or log out?\n"),
+                    "\nCongratulations on your purchase " + chalk.blue(customerName) + "!") +"\nYour total comes out to: " + chalk.green(totalPrice) + chalk.bgGreen("\nWould you like to make another purchase or log out?\n"),
                 choices: ["Make another purchase", "Log Out"]
             }
         ]).then(function(answer){
             currentOrder.length = 0;
             currentOrderQuantity.length = 0;
             globalNewStockQuantity.length = 0;
+            currentPrice.length = 0;
             switch (answer.finalOrder){
                 case "Make another purchase":
+
+                    totalPrice.length = 0;
                     start();
+                    
                     break;
                 
                 case "Log Out":
                     customerName.length = 0;
                     exit();
-                
+                    
+                    break;
+                    
                 default:
-                    exit();
+                   log("There's been some sort of error! We apologize sincerely. Please reload our app and try again")
 
 
 

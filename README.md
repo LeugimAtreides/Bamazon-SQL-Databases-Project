@@ -34,3 +34,7 @@ Once the customer has placed the order, the application should check if the stor
 However, if the store _does_ have enough of the product, it should fulfill the customer's order.
    * This means updating the SQL database to reflect the remaining quantity.
    * Once the update goes through, show the customer the total cost of their purchase.
+<br><br><br>
+<h1>VIDEO FUNCTIONALITY<h1>
+<br><br>
+<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
