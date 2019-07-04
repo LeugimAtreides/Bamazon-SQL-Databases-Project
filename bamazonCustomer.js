@@ -2,11 +2,16 @@ var mysql = require('mysql');
 var inquire = require('inquirer');
 var chalk = require('chalk');
 var Table = require('cli-table');
+
 var log = console.log;
+var customerName = [];
+var currentOrder = [];
+var currentOrderQuantity = [];
+var globalNewStockQuantity = [];
 
 var table = new Table({
     head: ['Item ID', 'Product Name', 'Department', 'Price', 'Stock Quantity'],
-    colWidths: [10, 20, 20, 10, 20]
+    colWidths: [10, 40, 20, 10, 20]
 });
 
 var connection = mysql.createConnection({
@@ -26,7 +31,8 @@ var connection = mysql.createConnection({
 connection.connect(function (err) {
     if (err) throw err;
     log("connected as id " + connection.threadId);
-    userVerify();
+    // userVerify();
+    buyProduct();
 });
 
 // this function will show the inventory after the user verification and run buyProduct();
@@ -78,7 +84,7 @@ function confirmNewUser() {
                 message: "Would you like to create an account with Bamazon today?",
                 default: true
             }
-        ]).then(function (answer) {
+        ]).then(function(answer) {
             if (answer.confirm) {
                 inquire
                     .prompt([
@@ -87,26 +93,28 @@ function confirmNewUser() {
                             type: "input",
                             message: "Enter your name and get ready to enjoy Bamazon!"
                         }
-                    ]).then(function (answer) {
+                    ]).then(function(answer) {
+                        // takes the newly made user and updates the name by taking the last created user id and updating the name field
+                        customerName.push(answer.name)
                         connection.query(
-                            "UPDATE users SET name = ? WHERE user_id = (SELECT MAX(user_id) FROM users)",
+                            "UPDATE users SET ? ORDER BY user_id DESC LIMIT 1",
                             {
                                 name: answer.name
                             }
 
-                        ), function (err) {
+                        ), function (err, res) {
 
+                            
                             if (err) throw err;
-                            buyProduct();
-                        }
-                    })
+                            
+                        };
+                        start();
+                    });
+                    
 
             }
         });
 };
-
-
-
 
 
 // this will run and create a user account or otherwise log user in
@@ -143,6 +151,7 @@ function userVerify() {
                                     if (err) throw err;
                                     for (let i = 0; i < res.length; i++) {
                                         log(chalk.blue("\nWelcome back " + res[i].name));
+                                        customerName.push(res[i].name)
                                         start();
                                     }
                                 }
@@ -156,7 +165,7 @@ function userVerify() {
                             log(chalk.bgRed("\nIncorrect password, please try again..."));
                             userVerify();
 
-                        } else {
+                        } else if (res[i].username !== answer.username && res[i].password !== answer.password) {
                             connection.query(
                                 "INSERT INTO users SET ?",
                                 {
@@ -165,8 +174,12 @@ function userVerify() {
                                 }
                             ), function (err) {
                                 if (err) throw err;
-                                confirmNewUser();
-                            }
+                                
+                            };
+                            return confirmNewUser();
+                            
+                        } else {
+                            exit();
                         }
                     }
                 }
@@ -175,5 +188,151 @@ function userVerify() {
 };
 
 function buyProduct() {
-    log(chalk.bgCyan("\nCOMING SOON"))
+    
+    inquire 
+    // prompt user to buy the product
+        .prompt([
+            {
+                name:"buy",
+                type:"input",
+                message: "Which product would you like to purchase? Please select its ID",
+                validate: function(value) {
+                    if (isNaN(value) === false) {
+                      return true;
+                    }
+                    return false;
+                  }
+
+            },
+            {
+                name:"order",
+                type:"input",
+                message: "How many of the selected items do you wish to buy?",
+                validate: function(value) {
+                    if (isNaN(value) === false) {
+                      return true;
+                    }
+                    return false;
+                  }
+            }
+        ]).then(function(answer){
+
+            // find the item_id of the product
+            connection.query(
+                "SELECT product_name, price FROM products WHERE ?",
+                {
+                    item_id: answer.buy
+                }
+            , function(err, res){
+
+                if(err) throw err;
+
+                // push the order quantity into a global variable
+                currentOrderQuantity.push(answer.order);
+                
+                // push the product purchase response into a global variable
+                currentOrder.push(res[0].product_name);
+
+                // inquire prompt to confirm order and show the order back to the customer
+
+                inquire
+                    .prompt([
+                        {
+                            name: "confirmOrder",
+                            type: "confirm",
+                            message: "\nis the following order correct?"
+                            + chalk.green("\nItem: ") + chalk.blue(currentOrder)
+                            + chalk.green("\nQuantity: ") + chalk.blue(answer.order) + "\n",
+                            default: true
+                        }
+                    ]).then(function(answer){
+
+                        // if the user confirms the answer then update the stock quantity
+
+                        if (answer.confirmOrder){
+
+                            connection.query(
+                                "SELECT stock_quantity FROM products WHERE ?",
+                                {
+                                    product_name: currentOrder
+
+                                }, function(err,res){
+
+                                    if(err) throw err;
+
+                                    // log(res[0].stock_quantity);
+
+                                    let oldStockQuantity = res[0].stock_quantity;
+
+                                    log(chalk.red(oldStockQuantity));
+
+                                    let localNewStockQuantity = oldStockQuantity - currentOrderQuantity;
+
+                                    globalNewStockQuantity.push(localNewStockQuantity);
+
+                                    updateStock();
+                                    
+                                }
+                            );
+
+                            // asynchronously run function to display to customer their purchase and price
+                            showFinalOrder();
+
+                        };
+                
+                    })
+                
+            })
+        })
+        
 }
+
+// function to update the table with the new stock after the purchase by the customer
+function updateStock() {
+    connection.query(
+        "UPDATE products SET ? WHERE ?",
+        [
+            {
+                product_name: currentOrder
+            },
+            {
+                stock_quantity: currentOrderQuantity
+            }
+        ]
+    )
+}
+
+// function to display the final order and price to the customer and ask for another purchase or exit program
+function showFinalOrder() {
+    inquire
+        prompt([
+            {
+                name: "finalOrder",
+                type: "choices",
+                message: chalk.bgGreen(
+                    "\nCongratulations on your purchase " + chalk.magenta(customerName) + "!" + "\nWhat would you like to make another purchase or log out?"),
+                choices: ["Make another purchase", "Log Out"]
+            }
+        ]).then(function(answer){
+            currentOrder.length = 0;
+            currentOrderQuantity.length = 0;
+            globalNewStockQuantity.length = 0;
+            switch (answer.name){
+                case "Make another purchase":
+                    start();
+                    break;
+                
+                case "Log Out":
+                    customerName.length = 0;
+                    exit();
+                
+                default:
+                    exit();
+
+
+
+            
+            }
+        })
+}
+
