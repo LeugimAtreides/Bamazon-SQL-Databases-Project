@@ -37,12 +37,15 @@ However, if the store _does_ have enough of the product, it should fulfill the c
 <br><br><br>
 <h1>Customer Bamazon Video Walkthrough<h1>
 <br><br>
-<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
+<a href="https://drive.google.com/open?id=1cZSHwf7mbw2MHA5PlNb9YdJ5nnBsiifV" type="video">
+Google Drive Link To Video of Functionality</a>
 <br><br><br>
 <h1>Manager Bamazon Video Walkthrough<h1>
 <br><br>
-<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
+<a href="https://drive.google.com/open?id=1cZSHwf7mbw2MHA5PlNb9YdJ5nnBsiifV" type="video">
+Google Drive Link To Video of Functionality</a>
 <br><br><br>
 <h1>Supervisor Bamazon Video Walkthrough<h1>
 <br><br>
-<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
+<a href="https://drive.google.com/open?id=1cZSHwf7mbw2MHA5PlNb9YdJ5nnBsiifV" type="video">
+Google Drive Link To Video of Functionality</a>
