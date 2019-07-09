@@ -20,3 +20,10 @@ create table users (
     password varchar(255) not null,
     primary key (user_id)
 );
+
+ CREATE TABLE departments(
+  department_id INT AUTO_INCREMENT NOT NULL,
+  department_name VARCHAR(45) NOT NULL,
+  over_head_costs DECIMAL(10,2) NOT NULL,
+  primary key(department_id)
+);

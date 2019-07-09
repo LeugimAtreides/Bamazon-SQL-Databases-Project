@@ -35,6 +35,14 @@ However, if the store _does_ have enough of the product, it should fulfill the c
    * This means updating the SQL database to reflect the remaining quantity.
    * Once the update goes through, show the customer the total cost of their purchase.
 <br><br><br>
-<h1>VIDEO FUNCTIONALITY<h1>
+<h1>Customer Bamazon Video Walkthrough<h1>
+<br><br>
+<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
+<br><br><br>
+<h1>Manager Bamazon Video Walkthrough<h1>
+<br><br>
+<video src="bamazon-functionality-walkthrough.webm" type="video/webm">
+<br><br><br>
+<h1>Supervisor Bamazon Video Walkthrough<h1>
 <br><br>
 <video src="bamazon-functionality-walkthrough.webm" type="video/webm">
